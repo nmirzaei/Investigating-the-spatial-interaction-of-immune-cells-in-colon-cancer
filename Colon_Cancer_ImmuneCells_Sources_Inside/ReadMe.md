@@ -1,6 +1,6 @@
-This folder contains file required for simulating the developement of Breast Cancer in PyMT-MMTV mouse models without immune cells influx.
+This folder contains file required for simulating the developement of Colon Cancer considering immune cell sources inside of it microenvironment.
 
-Corresponding paper: "A PDE Model of Breast Tumor Progression in MMTV-PyMT Mice"
+Corresponding paper: "Investigating the spatial interaction of immune cells in colon cancer"
 
 Code Authors: Navid Mohammad Mirzaei (https://github.com/nmirzaei) (https://sites.google.com/view/nmirzaei)
 
@@ -12,7 +12,7 @@ Requirements:
 
 2- pandas, scipy, numpy
 
-3- Mesh files are needed for this folder to run. Please download them from "A-Bio-Mechanical-PDE-model-of-breast-tumor-progression-in-MMTV-PyMT-mice/Meshes"
+3- Mesh files are needed for this folder to run. Please download them from "Investigating-the-spatial-interaction-of-immune-cells-in-colon-cancer/Meshes"
 
 4- For remeshing a legacy version of GMSH needs to be installed (i.e. gmsh-3.0.6-Linux64). In addition, it should be callable from within FEniCS. Use the          following lines to install is on Docker:
 
