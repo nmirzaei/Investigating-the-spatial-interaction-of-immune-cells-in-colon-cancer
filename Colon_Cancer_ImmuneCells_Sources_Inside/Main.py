@@ -192,6 +192,21 @@ clustercells=pd.read_csv('input/input/Large_Tumor_cell_data.csv').to_numpy()
 QSP_=QSP.from_cell_data(clustercells[Input2])
 params=QSP_.par
 pars = {Pars[k]:value for k,value in zip(range(len(Pars)),params)}
+
+answer = input('What type of macrophages? (Pro-Tumor=1, Anti-tumor=2, Regular=3)')
+
+if int(answer)==1:
+    pars['lambda_{G_betaM}'] = 0
+    pars['lambda_{I_gammaM}'] = 0
+elif int(answer)==2:
+    pars['lambda_{mu_1M}'] = 0
+elif int(answer)==2::
+    print('The original set of parameters used.')
+else:
+    print('Error: Wrong input!')
+    exit()
+
+
 ###############################################################
 
 
