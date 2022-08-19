@@ -85,6 +85,17 @@ Z_rot = [Expression(('-x[1]', 'x[0]'),degree=0)]
 Z = Z_transl + Z_rot
 ###############################################################
 
+###############################################################
+#We save information on the reference domain for sensitivity
+###############################################################
+mesh0 = Mesh('Mesh.xml')
+Volume0 = MeshFunction('size_t' , mesh0 , 'Mesh_physical_region.xml' )  #saves the interior info of the mesh
+bnd_mesh0 = MeshFunction('size_t', mesh0 , 'Mesh_facet_region.xml')  #saves the boundary info of the mesh
+VV0 = VectorFunctionSpace(mesh0,'Lagrange',1)
+SS0 = FunctionSpace(mesh0,'Lagrange',1)
+mesh0.bounding_box_tree().build(mesh0)
+###############################################################
+
 
 ###############################################################
 # Load mesh
@@ -439,13 +450,16 @@ j = int(0)
 #######################################################################
 
 #######################################################################
-#Curvature and Normal vector for the initial domain
+#Curvature and Normal vector for the initial domain. 
+#Also saving them for sensitivity
 #######################################################################
 crvt1, NORMAL1 = Curvature(mesh)
+crvt0, NORMAL0 = Curvature(mesh0)
+File("Curvature/crvt%d.xml" %(t))<<crvt0
+File("Normal/normal%d.xml" %(t))<<NORMAL0
 #######################################################################
 
 
-#+D_cell*dot(grad(Tc),grad(v3))*dx
 for n in range(num_steps):
      ##############################################################
      #First we plot the ICs and then solve. This is why we have this if condition
@@ -469,7 +483,15 @@ for n in range(num_steps):
              solve(a1==L1,UU)
              u_, p_,lambda_ = UU.split()
              ##############################################################
-
+                        
+             ##############################################################
+             #Saving the RHS sums for the sensitivity
+             ##############################################################
+             RHS_MECH_.set_allow_extrapolation(True)
+             RHS_MECH0 = project(RHS_MECH_,SS0)
+             File("RHS/RHS%d.xml" %(t))<<RHS_MECH0
+             ##############################################################
+            
              ##############################################################
              #Create displacement for mesh movement. Moving from current configuration
              ##############################################################
@@ -477,7 +499,15 @@ for n in range(num_steps):
              displ = project(u_,VV1)
              ALE.move(mesh,displ)
              #############################################################
-
+             
+             #############################################################
+             #Saving displacements for sensitivity
+             #############################################################
+             displ.set_allow_extrapolation(True)
+             displ0 = project(displ,VV0)
+             File("displacement/u%d.xml" %(t))<<displ0 
+             #############################################################
+                        
              ##############################################################
              #Updatung the curvature and normal vectors for the current configuration
              ##############################################################
