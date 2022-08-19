@@ -211,7 +211,7 @@ if int(answer)==1:
     pars['lambda_{I_gammaM}'] = 0
 elif int(answer)==2:
     pars['lambda_{mu_1M}'] = 0
-elif int(answer)==2::
+elif int(answer)==3:
     print('The original set of parameters used.')
 else:
     print('Error: Wrong input!')
