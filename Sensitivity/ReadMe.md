@@ -24,5 +24,7 @@ Since pyadjoint occupies a lot of memory it is recommended you find the displace
    to get the displacement fields. (Notice that this file does not call pyadjoint and it can be done via fenics alone)
 
 2- Now you should have a displacement folder with all the displacement fields created from part 1. Copy it in the folder you run your sensitivity from.
+   (Note: For the norm and orientation sensitivity this step is not needed, since they calculate they have to calculate displacement at each step to get
+   the measures required for the sensitivity analysis.)
 
 3- Proceed with running the sensitivity codes using a pyadjoint inegrated FEniCS. This step can take a while. 
