@@ -19,7 +19,7 @@ from dolfin import *
 def Curvature(mesh):
 
     ###############################################################
-    #Returns a the boundary representation of the CG-1 function v
+    #Returns the boundary representation of the CG-1 function v
     ###############################################################
     def mesh_to_boundary(v, b_mesh):
         ###############################################################
@@ -48,7 +48,7 @@ def Curvature(mesh):
         ###############################################################
 
         ###############################################################
-        # Use the inverse mapping to se the DOF values of a boundary
+        # Use the inverse mapping to set the DOF values of a boundary
         # function
         ###############################################################
         surface_space = dolfin.FunctionSpace(b_mesh, "CG", 1)
@@ -68,7 +68,7 @@ def Curvature(mesh):
         ###############################################################
 
     ###############################################################
-    #Map bulk values to boundary
+    #Map bulk values to the boundary
     ###############################################################
     def vector_mesh_to_boundary(func, b_mesh):
         v_split = func.split(deepcopy=True)
@@ -84,7 +84,7 @@ def Curvature(mesh):
     ###############################################################
 
     ###############################################################
-    #Returns sum of vec over all mpi processes.
+    #Returns the sum of vec over all mpi processes.
     #Each vec vector must have the same dimension for each MPI process
     ###############################################################
     def SyncSum(vec):
