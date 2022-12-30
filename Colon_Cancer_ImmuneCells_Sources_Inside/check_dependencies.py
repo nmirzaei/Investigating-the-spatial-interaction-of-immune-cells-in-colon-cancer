@@ -1,7 +1,18 @@
+'''
+Investigating the spatial interaction of immune cells in colon cancer
+RHS_sum: Sets up the system's right hand side for cells
+Author: Navid Mohammad Mirzaei https://sites.google.com/view/nmirzaei
+                               https://github.com/nmirzaei
+(c) Shahriyari Lab https://sites.google.com/site/leilishahriyari/
+'''
+###############################################################
+#Importing required functions
+###############################################################
 from dolfin import *
 import os
 import platform
 from subprocess import call
+###############################################################
 
 def check_dependencies():
 
@@ -18,7 +29,7 @@ def check_dependencies():
       answer = input('A FEniCS compatible GMSH installation is required for this code. Do you want to install it?(Yes=1, No=0)')
       if int(answer)==0:
           print('Warning: This code will not be able to do remeshing without a FEniCS compatible GMSH installation.\n')
-          print('Warning: No remeshing might cause in domain instabilities.\n')
+          print('Warning: No remeshing might cause domain instabilities.\n')
           print('**Either Choose no remeshing when prompted or rerun the code and install the FEniCS compatible GMSH installation.**')
       elif int(answer)==1:
           print('**Starting FEniCS compatible GMSH installation**')
@@ -48,6 +59,7 @@ def check_dependencies():
       answer1 = input('A pandas package installation is required for this code. Do you want to install it?(Yes=1, No=0)')
       if int(answer1)==0:
           print('Error: pandas is required for this code.\n')
+          exit()
       elif int(answer1)==1:
           print('**Starting pandas installation**')
           cmd6 = 'pip3 install --user pandas'
@@ -69,6 +81,7 @@ def check_dependencies():
       answer1 = input('A numpy package installation is required for this code. Do you want to install it?(Yes=1, No=0)')
       if int(answer1)==0:
           print('Error: numpy is required for this code.\n')
+          exit()
       elif int(answer1)==1:
           print('**Starting numpy installation**')
           cmd7 = 'pip3 install --user numpy'
