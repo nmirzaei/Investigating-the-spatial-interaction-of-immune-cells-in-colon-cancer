@@ -33,7 +33,7 @@ def GeoMaker(MeshSize,mesh,file_name,Refine,j):
 
     ###############################################################
     #Setting up Parameters
-    #Center should be initialized by user. It is the center point of the mesh
+    #Center should be initialized by the user. It is the center point of the mesh
     #The center is crucial for polar ordering
     ###############################################################
     lc = str(MeshSize)
@@ -72,7 +72,7 @@ def GeoMaker(MeshSize,mesh,file_name,Refine,j):
                  y = str(Y[c])
                  z = str(0)
                  the_file.write('//+\nPoint('+idx+')={'+x+','+y+','+z+'};\n')
-        #The following two lines are used in case you need to define a point to pin in you mesh
+        #The following two lines are used in case you need to define a point to pin in your mesh
         # idx = str(c+1)
         # the_file.write('//+\nPoint('+idx+')={0.25,0,0,'+lc+'};\n')
         the_file.write('\ns1 = newreg;\n')
