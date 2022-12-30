@@ -28,7 +28,17 @@ from subprocess import call
 from GeoMaker import *
 from Curvature import *
 from qspmodel import *
+from IC_Source import *
+from xdmffile_creator import *
+from check_dependencies import *
 from ufl import Min
+import os
+###############################################################
+
+###############################################################
+#Check required packages
+###############################################################
+check_dependencies()
 ###############################################################
 
 ###############################################################
@@ -42,18 +52,45 @@ ffc_options = {"optimize": True, \
 ###############################################################
 
 ###############################################################
+#time step variables
+###############################################################
+T = 3002            # final
+num_steps= 3002   # number of time steps
+dt = T / num_steps  # time step
+eps = 1             # diffusion coefficient
+t=0                 # initial time
+k = Constant(dt)    # Constant tip step object for weak formulation
+###############################################################
+
+###############################################################
 #Remeshing info
 ###############################################################
 #For no refinement set refine=1 for refinement set the intensity >1
 #Org_size is the original element size of your mesh. Can be extracted from the .geo mesh files
 #Max_cellnum and Min_cellnum will assure that after remeshing the number of new cells are in [Min_cellnum,Max_cellnum]
-#remesh_step is the step when remeshing is initiated. Set it equal to negative or very large number for no remeshing
-refine = 1
-Refine = str(refine)
-Org_size = 0.028
-Max_cellnum = 2700
-Min_cellnum = 2600
-remesh_step = 7
+#remesh_step is the step when remeshing is initiated.
+prompt1 = input('Enter a positive integer as the remeshing_step number. If you do not want any remeshing (NOT RECOMMENDED) enter 0:')
+if int(prompt1)>0:
+    refine = 1
+    Max_cellnum = 2700
+    Min_cellnum = 2600
+    Refine = str(refine)
+    Org_size = 0.028
+    prompt2 = input('Enter a positive integer for refinement intensity. (No refinement (default)=1, Refinement>1)')
+    prompt3 = input('What is the minimum number of cells allowable after remeshing? (default = 2600)')
+    prompt4 = input('What is the minimum number of cells allowable after remeshing? (default = 2700)')
+    prompt5 = input('What is the original size of your mesh cells. User should refer to the mesh file. (default=0.028)')
+    refine = int(prompt2)
+    Max_cellnum = int(prompt4)
+    Min_cellnum = int(prompt3)
+    Refine = str(refine)
+    Org_size = float(prompt5)
+    remesh_step = int(prompt1)
+elif int(prompt1)==0:
+    remesh_step = num_steps+10
+else:
+    print("Error: Unacceptable input.")
+    exit()
 ###############################################################
 
 ###############################################################
@@ -66,36 +103,21 @@ logging.getLogger('FFC').setLevel(logging.WARNING)
 ###############################################################
 
 ###############################################################
-# Nullspace of rigid motions
+#Paths
 ###############################################################
-#Translation in 3D. Comment out if the problem is 2D
-#Z_transl = [Constant((1, 0, 0)), Constant((0, 1, 0)), Constant((0, 0, 1))]
-
-#Rotations 3D. Comment out if the problem is 2D
-#Z_rot = [Expression(('0', 'x[2]', '-x[1]')),
-#         Expression(('-x[2]', '0', 'x[0]')),
-#         Expression(('x[1]', '-x[0]', '0'))]
-
-#Translation 2D. Comment out if the problem is 3D
-Z_transl = [Constant((1, 0)), Constant((0, 1))]
-
-#Rotations 2D. Comment out if the problem is 3D
-Z_rot = [Expression(('-x[1]', 'x[0]'),degree=0)]
-#All
-Z = Z_transl + Z_rot
+# gives the path of demo.py
+path = os.path.realpath(__file__)
+# gives the directory where demo.py 
+# exists
+dir = os.path.dirname(path)
+folder = os.path.basename(dir)
+# replaces folder name to 
+# Meshes in directory
+dir = dir.replace(folder, 'Meshes')
+# changes the current directory to 
+# Meshes folder
+os.chdir(dir)
 ###############################################################
-
-###############################################################
-#We save information on the reference domain for sensitivity
-###############################################################
-mesh0 = Mesh('Mesh.xml')
-Volume0 = MeshFunction('size_t' , mesh0 , 'Mesh_physical_region.xml' )  #saves the interior info of the mesh
-bnd_mesh0 = MeshFunction('size_t', mesh0 , 'Mesh_facet_region.xml')  #saves the boundary info of the mesh
-VV0 = VectorFunctionSpace(mesh0,'Lagrange',1)
-SS0 = FunctionSpace(mesh0,'Lagrange',1)
-mesh0.bounding_box_tree().build(mesh0)
-###############################################################
-
 
 ###############################################################
 # Load mesh
@@ -113,6 +135,43 @@ mvc2 = MeshValueCollection("size_t", mesh, 1)
 with XDMFFile("boundaries.xdmf") as infile:
     infile.read(mvc2, "f")
 bnd_mesh = cpp.mesh.MeshFunctionSizet(mesh, mvc2)
+###############################################################
+
+###############################################################
+#Paths
+###############################################################
+# replaces Meshes folder name to 
+# the current code directory
+dir = dir.replace('Meshes',folder)
+# changes the meshes directory to 
+# the current code folder
+os.chdir(dir)
+###############################################################
+
+###############################################################
+# Nullspace of rigid motions
+###############################################################
+d = mesh.geometry().dim()
+if d==3:
+    #Translation in 3D
+    Z_transl = [Constant((1, 0, 0)), Constant((0, 1, 0)), Constant((0, 0, 1))]
+
+    #Rotations 3D
+    Z_rot = [Expression(('0', 'x[2]', '-x[1]')),
+            Expression(('-x[2]', '0', 'x[0]')),
+            Expression(('x[1]', '-x[0]', '0'))]
+elif d==2:
+    #Translation 2D. Comment out if the problem is 3D
+    Z_transl = [Constant((1, 0)), Constant((0, 1))]
+
+    #Rotations 2D. Comment out if the problem is 3D
+    Z_rot = [Expression(('-x[1]', 'x[0]'),degree=0)]
+
+else:
+    print("Mesh is not set up appropriately!")
+    exit()
+
+Z = Z_transl + Z_rot
 ###############################################################
 
 ###############################################################
@@ -171,15 +230,12 @@ dx = Measure('dx', subdomain_data=Volume)
 ###############################################################
 
 ###############################################################
-#time step variables
+#PDE Parameters dimensional
 ###############################################################
-T = 3002            # final
-num_steps= 3002   # number of time steps
-dt = T / num_steps  # time step
-eps = 1             # diffusion coefficient
-t=0                 # initial time
-k = Constant(dt)    # Constant tip step object for weak formulation
-###############################################################
+#They are all in cm^2/day.
+D_cell, D_H, D_cyto =  8.64e-6, 7.92e-2, 1.24e-3
+coeff = Constant(1)    #advection constant taken to be one for this problem
+##############################################################
 
 ###############################################################
 #ODE Parameters non-dimensional
@@ -193,7 +249,6 @@ Pars = ['lambda_{T_hD}',  'lambda_{T_hM}',  'lambda_{T_hmu_1}', 'lambda_{T_CT_h}
                                       'delta_{C}',     'delta_{N}',       'delta_{mu_1}',     'delta_{mu_2}',  'delta_{H}',     'delta_{I_gamma}',    'delta_{G_beta}',
                                       'A_{T_N}','A_{Dn}','M_0','C_0', 'alpha_{T_NT_h}', 'alpha_{T_NT_C}', 'alpha_{T_NT_r}', 'alpha_{D_ND}']
 ###############################################################
-
 
 ###############################################################
 # Calculating parameter values
@@ -216,223 +271,28 @@ elif int(answer)==3:
 else:
     print('Error: Wrong input!')
     exit()
-
-
 ###############################################################
-
 
 ###############################################################
 #Initial conditions
 ###############################################################
-#Tn is outside of the environment and are modeled as ODEs so uniform IC
-#Cytokines are taken to be zero at the begining.
-#Immune cells will start at their source locations.
-#Cancer cells and Necrotic cells ICs are uniform and their values are
-#extracted from the ODE paper
-IC=np.array(pd.read_csv('input/input/Initial_Conditions.csv'))
-Tn_0 = Expression('Init1', degree=0, Init1=IC[Input2,0])
-Th_0 = Expression('Init2', degree=0, Init2=0)
-Tc_0 = Expression('Init3', degree=0, Init3=0)
-Tr_0 = Expression('Init4', degree=0, Init4=0)
-Dn_0 = Expression('Init5', degree=0, Init5=0)
-D_0 = Expression('Init6', degree=0, Init6=0)
-M_0 = Expression('Init7', degree=0, Init7=0)
-C_0 = Expression('Init8', degree=0, Init8=IC[Input2,7])
-N_0 = Expression('Init9', degree=0, Init9=IC[Input2,8])
-H_0 = Expression('Init10', degree=0, Init10=0)
-mu1_0 = Expression('Init11', degree=0, Init11=0)
-mu2_0 = Expression('Init12', degree=0, Init12=0)
-Igamma_0 = Expression('Init13', degree=0, Init13=0)
-Gbeta_0 = Expression('Init14', degree=0, Init14=0)
-#Interpolation of the ICs into mixed space subspaces
-Tn0 = interpolate(Tn_0, Mixed_Space.sub(0).collapse())
-Th0 = interpolate(Th_0, Mixed_Space.sub(1).collapse())
-Tc0 = interpolate(Tc_0, Mixed_Space.sub(2).collapse())
-Tr0 = interpolate(Tr_0, Mixed_Space.sub(3).collapse())
-Dn0 = interpolate(Dn_0, Mixed_Space.sub(4).collapse())
-D0 = interpolate(D_0, Mixed_Space.sub(5).collapse())
-M0 = interpolate(M_0, Mixed_Space.sub(6).collapse())
-C0 = interpolate(C_0, Mixed_Space.sub(7).collapse())
-N0 = interpolate(N_0, Mixed_Space.sub(8).collapse())
-H0 = interpolate(H_0, Mixed_Space.sub(9).collapse())
-mu10 = interpolate(mu1_0, Mixed_Space.sub(10).collapse())
-mu20 = interpolate(mu2_0, Mixed_Space.sub(11).collapse())
-Igamma0 = interpolate(Igamma_0, Mixed_Space.sub(12).collapse())
-Gbeta0 = interpolate(Gbeta_0, Mixed_Space.sub(13).collapse())
-###############################################################
-
-###############################################################
-#Creating the sources for the immune cells
-###############################################################
-ss1= Expression('(x[0]-0.1875)*(x[0]-0.1875) + (x[1]-0.32476)*(x[1]-0.32476)', degree=0)
-source1 = conditional(lt(ss1,0.005),0.5,0)
-Source1 = project(source1,S1)
-i_source1=np.argwhere(Source1.vector().get_local()[:]<=0)  #making negatives zero
-Source1.vector()[i_source1[:,0]] = 1.e-16
-File('test/source1.pvd')<<Source1
-
-ss2= Expression('(x[0]+0.1875)*(x[0]+0.1875) + (x[1]-0.32476)*(x[1]-0.32476)', degree=0)
-source2 = conditional(lt(ss2,0.005),0.5,0)
-Source2 = project(source2,S1)
-i_source2=np.argwhere(Source2.vector().get_local()[:]<=0)  #making negatives zero
-Source2.vector()[i_source2[:,0]] = 1.e-16
-File('test/source2.pvd')<<Source2
-
-ss3= Expression('(x[0]+0.375)*(x[0]+0.375) + (x[1])*(x[1])', degree=0)
-source3 = conditional(lt(ss3,0.005),0.5,0)
-Source3 = project(source3,S1)
-i_source3=np.argwhere(Source3.vector().get_local()[:]<=0)  #making negatives zero
-Source3.vector()[i_source3[:,0]] = 1.e-16
-File('test/source3.pvd')<<Source3
-
-ss4= Expression('(x[0]+0.1875)*(x[0]+0.1875) + (x[1]+0.32476)*(x[1]+0.32476)', degree=0)
-source4 = conditional(lt(ss4,0.005),0.5,0)
-Source4 = project(source4,S1)
-i_source4=np.argwhere(Source4.vector().get_local()[:]<=0)  #making negatives zero
-Source4.vector()[i_source4[:,0]] = 1.e-16
-File('test/source4.pvd')<<Source4
-
-ss5= Expression('(x[0]-0.1875)*(x[0]-0.1875) + (x[1]+0.32476)*(x[1]+0.32476)', degree=0)
-source5 = conditional(lt(ss5,0.005),0.5,0)
-Source5 = project(source5,S1)
-i_source5=np.argwhere(Source5.vector().get_local()[:]<=0)  #making negatives zero
-Source5.vector()[i_source5[:,0]] = 1.e-16
-File('test/source5.pvd')<<Source5
-
-ss6= Expression('(x[0]-0.375)*(x[0]-0.375) + (x[1])*(x[1])', degree=0)
-source6 = conditional(lt(ss6,0.005),0.5,0)
-Source6 = project(source6,S1)
-i_source6=np.argwhere(Source6.vector().get_local()[:]<=0)  #making negatives zero
-Source6.vector()[i_source6[:,0]] = 1.e-16
-File('test/source6.pvd')<<Source6
-
+Source1,Source2,Source3,Source4,Source5,Source6,U_n = IC_Source(Mixed_Space,S1,U_n,Input2)
 Source = [Source1,Source2,Source3,Source4,Source5,Source6]
-###############################################################
-
-
-###############################################################
-#Assigning subspace projected ICs as the initial step of iteration
-###############################################################
-assign(U_n.sub(0),Tn0)
-assign(U_n.sub(1),Th0)
-assign(U_n.sub(2),Tc0)
-assign(U_n.sub(3),Tr0)
-assign(U_n.sub(4),Dn0)
-assign(U_n.sub(5),D0)
-assign(U_n.sub(6),M0)
-assign(U_n.sub(7),C0)
-assign(U_n.sub(8),N0)
-assign(U_n.sub(9),H0)
-assign(U_n.sub(10),mu10)
-assign(U_n.sub(11),mu20)
-assign(U_n.sub(12),Igamma0)
-assign(U_n.sub(13),Gbeta0)
-
 Tn_n, Th_n, Tc_n, Tr_n, Dn_n, D_n, M_n, C_n, N_n, H_n, mu1_n, mu2_n, Igamma_n, Gbeta_n= U_n.split()
-##############################################################
-
-
-###############################################################
-#PDE Parameters dimensional
-###############################################################
-#They are all in cm^2/day.
-D_cell, D_H, D_cyto =  8.64e-6, 7.92e-2, 1.24e-3
-coeff = Constant(1)    #advection constant taken to be one for this problem
-##############################################################
-
-
-
-###############################################################
-# Create XDMFFile files for visualization output
-###############################################################
-vtkfile_1 = XDMFFile(MPI.comm_world,"reaction_system/Tn.xdmf")
-vtkfile_1.parameters["flush_output"] = True
-vtkfile_2 = XDMFFile(MPI.comm_world,"reaction_system/Th.xdmf")
-vtkfile_2.parameters["flush_output"] = True
-vtkfile_3 = XDMFFile(MPI.comm_world,"reaction_system/Tc.xdmf")
-vtkfile_3.parameters["flush_output"] = True
-vtkfile_4 = XDMFFile(MPI.comm_world,"reaction_system/Tr.xdmf")
-vtkfile_4.parameters["flush_output"] = True
-vtkfile_5 = XDMFFile(MPI.comm_world,"reaction_system/Dn.xdmf")
-vtkfile_5.parameters["flush_output"] = True
-vtkfile_6 = XDMFFile(MPI.comm_world,"reaction_system/D.xdmf")
-vtkfile_6.parameters["flush_output"] = True
-vtkfile_7 = XDMFFile(MPI.comm_world,"reaction_system/M.xdmf")
-vtkfile_7.parameters["flush_output"] = True
-vtkfile_8 = XDMFFile(MPI.comm_world,"reaction_system/C.xdmf")
-vtkfile_8.parameters["flush_output"] = True
-vtkfile_9 = XDMFFile(MPI.comm_world,"reaction_system/N.xdmf")
-vtkfile_9.parameters["flush_output"] = True
-vtkfile_10 = XDMFFile(MPI.comm_world,"reaction_system/H.xdmf")
-vtkfile_10.parameters["flush_output"] = True
-vtkfile_11 = XDMFFile(MPI.comm_world,"reaction_system/mu1.xdmf")
-vtkfile_11.parameters["flush_output"] = True
-vtkfile_12 = XDMFFile(MPI.comm_world,"reaction_system/mu2.xdmf")
-vtkfile_12.parameters["flush_output"] = True
-vtkfile_13 = XDMFFile(MPI.comm_world,"reaction_system/Igamma.xdmf")
-vtkfile_13.parameters["flush_output"] = True
-vtkfile_14 = XDMFFile(MPI.comm_world,"reaction_system/Gbeta.xdmf")
-vtkfile_14.parameters["flush_output"] = True
-vtkfile_15 = XDMFFile(MPI.comm_world,"reaction_system/Total_Cells.xdmf")
-vtkfile_15.parameters["flush_output"] = True
-vtkfile_16 = XDMFFile(MPI.comm_world,"reaction_system/rhs_mech.xdmf")
-vtkfile_16.parameters["flush_output"] = True
-vtkfile_17 = XDMFFile(MPI.comm_world,"reaction_system/total_Tn.xdmf")
-vtkfile_17.parameters["flush_output"] = True
-vtkfile_18 = XDMFFile(MPI.comm_world,"reaction_system/total_Th.xdmf")
-vtkfile_18.parameters["flush_output"] = True
-vtkfile_19 = XDMFFile(MPI.comm_world,"reaction_system/total_Tc.xdmf")
-vtkfile_19.parameters["flush_output"] = True
-vtkfile_20 = XDMFFile(MPI.comm_world,"reaction_system/total_Tr.xdmf")
-vtkfile_20.parameters["flush_output"] = True
-vtkfile_21 = XDMFFile(MPI.comm_world,"reaction_system/total_Dn.xdmf")
-vtkfile_21.parameters["flush_output"] = True
-vtkfile_22 = XDMFFile(MPI.comm_world,"reaction_system/total_D.xdmf")
-vtkfile_22.parameters["flush_output"] = True
-vtkfile_23 = XDMFFile(MPI.comm_world,"reaction_system/total_M.xdmf")
-vtkfile_23.parameters["flush_output"] = True
-vtkfile_24 = XDMFFile(MPI.comm_world,"reaction_system/total_C.xdmf")
-vtkfile_24.parameters["flush_output"] = True
-vtkfile_25 = XDMFFile(MPI.comm_world,"reaction_system/total_N.xdmf")
-vtkfile_25.parameters["flush_output"] = True
-vtkfile_26 = XDMFFile(MPI.comm_world,"reaction_system/curvature.xdmf")
-vtkfile_26.parameters["flush_output"] = True
-vtkfile_27 = XDMFFile(MPI.comm_world,"reaction_system/normal.xdmf")
-vtkfile_27.parameters["flush_output"] = True
-vtkfile_28 = XDMFFile(MPI.comm_world,"reaction_system/u.xdmf")
-vtkfile_28.parameters["flush_output"] = True
 ##############################################################
 
 ##############################################################
 #VTK file array for saving plots
 ##############################################################
-vtkfile = [vtkfile_1,vtkfile_2,vtkfile_3,vtkfile_4,vtkfile_5,vtkfile_6,vtkfile_7,vtkfile_8,vtkfile_9,\
-vtkfile_10,vtkfile_11,vtkfile_12,vtkfile_13,vtkfile_14,vtkfile_15,vtkfile_16,vtkfile_17,vtkfile_18,vtkfile_19,\
-vtkfile_20,vtkfile_21,vtkfile_22,vtkfile_23,vtkfile_24,vtkfile_25,vtkfile_26,vtkfile_27,vtkfile_28]
+vtkfile = xdmffile_creator()
 ##############################################################
 
 ###############################################################
 #Sum of RHS
 ###############################################################
-def RHS_sum(U,Source,pars):
-    Tn, Th, Tc, Tr, Dn, D, M, C, N, H, mu1, mu2, Igamma, Gbeta= U.split()
-    RHS_Tn = pars['A_{T_N}']-pars['alpha_{T_NT_h}']*(pars['lambda_{T_hD}']*D+pars['lambda_{T_hM}']*M+pars['lambda_{T_hmu_1}']*mu1)*Tn-pars['alpha_{T_NT_C}']*(pars['lambda_{T_CT_h}']*Th+pars['lambda_{T_CD}']*D)*Tn-pars['alpha_{T_NT_r}']*(pars['lambda_{T_rT_h}']*Th+pars['lambda_{T_rmu_2}']*mu2+pars['lambda_{T_rG_beta}']*Gbeta)*Tn-pars['delta_{T_N}']*Tn
-    RHS_Th = (pars['lambda_{T_hD}']*D+pars['lambda_{T_hM}']*M+pars['lambda_{T_hmu_1}']*mu1)*Tn-(pars['delta_{T_hmu_2}']*mu2+pars['delta_{T_hT_r}']*Tr+pars['delta_{T_h}'])*Th+Source[0]
-    RHS_Tc = (pars['lambda_{T_CT_h}']*Th+pars['lambda_{T_CD}']*D)*Tn-(pars['delta_{T_Cmu_2}']*mu2+pars['delta_{T_CT_r}']*Tr+pars['delta_{T_C}'])*Tc+Source[1]
-    RHS_Tr = (pars['lambda_{T_rT_h}']*Th+pars['lambda_{T_rmu_2}']*mu2+pars['lambda_{T_rG_beta}']*Gbeta)*Tn-(pars['delta_{T_rmu_1}']*mu1+pars['delta_{T_r}'])*Tr+Source[2]
-    RHS_Dn = pars['A_{Dn}']-pars['alpha_{D_ND}']*(pars['lambda_{DH}']*H+pars['lambda_{DC}']*C)*Dn-(pars['delta_{DH}']*H+pars['delta_{D}'])*Dn+Source[3]
-    RHS_D = (pars['lambda_{DH}']*H+pars['lambda_{DC}']*C)*Dn-(pars['delta_{DH}']*H+pars['delta_{DC}']*C+pars['delta_{D}'])*D+Source[4]
-    RHS_M = (pars['lambda_{Mmu_2}']*mu2+pars['lambda_{MI_gamma}']*Igamma+pars['lambda_{MT_h}']*Th)*(pars['M_0']-M)-pars['delta_{M}']*M+Source[5]
-    RHS_C = (pars['lambda_{C}']+pars['lambda_{Cmu_1}']*mu1)*C*(Constant(1)-C/pars['C_0'])-(pars['delta_{CG_beta}']*Gbeta+pars['delta_{CI_gamma}']*Igamma+pars['delta_{CT_C}']*Tc+pars['delta_{C}'])*C
-    RHS_N = pars['alpha_{NC}']*(pars['delta_{CG_beta}']*Gbeta+pars['delta_{CI_gamma}']*Igamma+pars['delta_{CT_C}']*Tc+pars['delta_{C}'])*C-pars['delta_{N}']*N
-    return RHS_Th+RHS_Tc+RHS_Tr+RHS_Dn+RHS_D+RHS_M+RHS_C+RHS_N
-
 RHS = RHS_sum(U_n,Source,pars)
 RHS_MECH_ = project(RHS,S1)
 ##############################################################
-
-
-
 
 #######################################################################
 #Mesh and remeshing related info and
@@ -450,16 +310,12 @@ j = int(0)
 #######################################################################
 
 #######################################################################
-#Curvature and Normal vector for the initial domain. 
-#Also saving them for sensitivity
+#Curvature and Normal vector for the initial domain
 #######################################################################
 crvt1, NORMAL1 = Curvature(mesh)
-crvt0, NORMAL0 = Curvature(mesh0)
-File("Curvature/crvt%d.xml" %(t))<<crvt0
-File("Normal/normal%d.xml" %(t))<<NORMAL0
 #######################################################################
 
-
+#+D_cell*dot(grad(Tc),grad(v3))*dx
 for n in range(num_steps):
      ##############################################################
      #First we plot the ICs and then solve. This is why we have this if condition
@@ -483,15 +339,7 @@ for n in range(num_steps):
              solve(a1==L1,UU)
              u_, p_,lambda_ = UU.split()
              ##############################################################
-                        
-             ##############################################################
-             #Saving the RHS sums for the sensitivity
-             ##############################################################
-             RHS_MECH_.set_allow_extrapolation(True)
-             RHS_MECH0 = project(RHS_MECH_,SS0)
-             File("RHS/RHS%d.xml" %(t))<<RHS_MECH0
-             ##############################################################
-            
+
              ##############################################################
              #Create displacement for mesh movement. Moving from current configuration
              ##############################################################
@@ -499,15 +347,7 @@ for n in range(num_steps):
              displ = project(u_,VV1)
              ALE.move(mesh,displ)
              #############################################################
-             
-             #############################################################
-             #Saving displacements for sensitivity
-             #############################################################
-             displ.set_allow_extrapolation(True)
-             displ0 = project(displ,VV0)
-             File("displacement/u%d.xml" %(t))<<displ0 
-             #############################################################
-                        
+
              ##############################################################
              #Updatung the curvature and normal vectors for the current configuration
              ##############################################################
@@ -536,7 +376,6 @@ for n in range(num_steps):
          + ((mu2-mu2_n)/k)*v12*dx+D_cyto*dot(grad(mu2),grad(v12))*dx-(pars['lambda_{mu_2M}']*M+pars['lambda_{mu_2D}']*D+pars['lambda_{mu_2T_r}']*Tr-pars['delta_{mu_2}']*mu2)*v12*dx\
          + ((Igamma-Igamma_n)/k)*v13*dx+D_cyto*dot(grad(Igamma),grad(v13))*dx-(pars['lambda_{I_gammaT_h}']*Th+pars['lambda_{I_gammaT_C}']*Tc+pars['lambda_{I_gammaM}']*M-pars['delta_{I_gamma}']*Igamma)*v13*dx\
          + ((Gbeta-Gbeta_n)/k)*v14*dx+D_cyto*dot(grad(Gbeta),grad(v14))*dx-(pars['lambda_{G_betaM}']*M+pars['lambda_{G_betaT_r}']*Tr-pars['delta_{G_beta}']*Gbeta)*v14*dx
-
 
          bc = []
          solve(F1==0,U,bc)
@@ -623,25 +462,21 @@ for n in range(num_steps):
                     Th_total_ = project(Th_total,R)
                 except:
                     Th_total_ = project(Constant(0.0),R)
-
                 try:
                     Tc_total =assemble(Tc_n*dx)
                     Tc_total_ = project(Tc_total,R)
                 except:
                     Tc_total_ = project(Constant(0.0),R)
-
                 try:
                     Tr_total =assemble(Tr_n*dx)
                     Tr_total_ = project(Tr_total,R)
                 except:
                     Tr_total_ = project(Constant(0.0),R)
-
                 try:
                     Dn_total =assemble(Dn_n*dx)
                     Dn_total_ = project(Dn_total,R)
                 except:
                     Dn_total_ = project(Constant(0.0),R)
-
                 try:
                     D_total =assemble(D_n*dx)
                     D_total_ = project(D_total,R)
@@ -742,17 +577,14 @@ for n in range(num_steps):
          xdmf = XDMFFile(mesh.mpi_comm(),"boundaries1.xdmf")
          xdmf.write(bnd_mesh)
          xdmf.close()
-
          mesh = Mesh()
          xdmf = XDMFFile(mesh.mpi_comm(), "Mesh1.xdmf")
          xdmf.read(mesh)
-
          mvc = MeshValueCollection("size_t", mesh, 2)
          with XDMFFile("Mesh1.xdmf") as infile:
              infile.read(mvc, "f")
          Volume = cpp.mesh.MeshFunctionSizet(mesh, mvc)
          xdmf.close()
-
          mvc2 = MeshValueCollection("size_t", mesh, 1)
          with XDMFFile("boundaries1.xdmf") as infile:
              infile.read(mvc2, "f")
@@ -768,7 +600,6 @@ for n in range(num_steps):
          P00 = VectorElement("R", mesh.ufl_cell(), 0,dim=4)
          TH = MixedElement([P22,P11,P00])
          W = FunctionSpace(mesh, TH)
-
          #Biological problem
          #Nodal Enrichment is done for more stability
          P1 = FiniteElement('P', triangle,1)
@@ -776,7 +607,6 @@ for n in range(num_steps):
          NEE = NodalEnrichedElement(P1, PB)
          element = MixedElement([NEE,NEE,NEE,NEE,NEE,NEE,NEE,NEE,NEE,NEE,NEE,NEE,NEE,NEE])
          Mixed_Space = FunctionSpace(mesh, element)
-
          #Auxillary spaces for projection and plotting
          S1 = FunctionSpace(mesh,'P',1)
          VV = VectorFunctionSpace(mesh,'Lagrange',4)
@@ -853,13 +683,6 @@ for n in range(num_steps):
          #######################################################################
          print('Remeshing done!')
          #######################################################################
-
-     #######################################################################
-     #In case you want to work with the reference domain instead of current domain
-     #######################################################################
-     # displ.vector()[:]*= -1
-     # ALE.move(mesh,displ)
-     #######################################################################
 
 #######################################################################
 #Print the time table
