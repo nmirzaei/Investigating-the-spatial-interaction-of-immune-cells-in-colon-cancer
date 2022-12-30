@@ -59,7 +59,7 @@ num_steps= 3002   # number of time steps
 dt = T / num_steps  # time step
 eps = 1             # diffusion coefficient
 t=0                 # initial time
-k = Constant(dt)    # Constant tip step object for weak formulation
+k = Constant(dt)    # Constant time step object for the weak formulation
 ###############################################################
 
 ###############################################################
@@ -76,10 +76,10 @@ if int(prompt1)>0:
     Min_cellnum = 2600
     Refine = str(refine)
     Org_size = 0.028
-    prompt2 = input('Enter a positive integer for refinement intensity. (No refinement (default)=1, Refinement>1)')
+    prompt2 = input('Enter a positive integer for the refinement intensity. (No refinement (default)=1, Refinement>1)')
     prompt3 = input('What is the minimum number of cells allowable after remeshing? (default = 2600)')
-    prompt4 = input('What is the minimum number of cells allowable after remeshing? (default = 2700)')
-    prompt5 = input('What is the original size of your mesh cells. User should refer to the mesh file. (default=0.028)')
+    prompt4 = input('What is the maximum number of cells allowable after remeshing? (default = 2700)')
+    prompt5 = input('What is the original size of your mesh cells. User should refer to the mesh .geo file. (default=0.028)')
     refine = int(prompt2)
     Max_cellnum = int(prompt4)
     Min_cellnum = int(prompt3)
@@ -105,17 +105,14 @@ logging.getLogger('FFC').setLevel(logging.WARNING)
 ###############################################################
 #Paths
 ###############################################################
-# gives the path of demo.py
+# gives the path of Main.py
 path = os.path.realpath(__file__)
-# gives the directory where demo.py 
-# exists
+# gives the directory where Main.py exists
 dir = os.path.dirname(path)
 folder = os.path.basename(dir)
-# replaces folder name to 
-# Meshes in directory
+# replaces folder name to Meshes in the same directory
 dir = dir.replace(folder, 'Meshes')
-# changes the current directory to 
-# Meshes folder
+# changes the current directory to Meshes folder
 os.chdir(dir)
 ###############################################################
 
@@ -152,11 +149,9 @@ mesh0.bounding_box_tree().build(mesh0)
 ###############################################################
 #Paths
 ###############################################################
-# replaces Meshes folder name to 
-# the current code directory
+# replaces Meshes folder name to the current code directory
 dir = dir.replace('Meshes',folder)
-# changes the meshes directory to 
-# the current code folder
+# changes the meshes directory to the current code folder
 os.chdir(dir)
 ###############################################################
 
@@ -173,10 +168,10 @@ if d==3:
             Expression(('-x[2]', '0', 'x[0]')),
             Expression(('x[1]', '-x[0]', '0'))]
 elif d==2:
-    #Translation 2D. Comment out if the problem is 3D
+    #Translation 2D. 
     Z_transl = [Constant((1, 0)), Constant((0, 1))]
 
-    #Rotations 2D. Comment out if the problem is 3D
+    #Rotations 2D. 
     Z_rot = [Expression(('-x[1]', 'x[0]'),degree=0)]
 
 else:
@@ -235,14 +230,14 @@ displ = Function(VV1)
 ###############################################################
 
 ###############################################################
-# Construct integration measure using these markers
+# Construct integration measures using these markers
 ###############################################################
 ds = Measure('ds', subdomain_data=bnd_mesh)
 dx = Measure('dx', subdomain_data=Volume)
 ###############################################################
 
 ###############################################################
-#PDE Parameters dimensional
+#PDE Parameters (dimensional)
 ###############################################################
 #They are all in cm^2/day.
 D_cell, D_H, D_cyto =  8.64e-6, 7.92e-2, 1.24e-3
@@ -250,7 +245,7 @@ coeff = Constant(1)    #advection constant taken to be one for this problem
 ##############################################################
 
 ###############################################################
-#ODE Parameters non-dimensional
+#Parameters names
 ###############################################################
 Pars = ['lambda_{T_hD}',  'lambda_{T_hM}',  'lambda_{T_hmu_1}', 'lambda_{T_CT_h}','lambda_{T_CD}', 'lambda_{T_rT_h}', 'lambda_{T_rmu_2}','lambda_{T_rG_beta}',
                                       'lambda_{DH}',   'lambda_{DC}',     'lambda_{Mmu_2}',   'lambda_{MI_gamma}', 'lambda_{MT_h}', 'lambda_{C}',    'lambda_{Cmu_1}', 'alpha_{NC}',
@@ -271,7 +266,7 @@ QSP_=QSP.from_cell_data(clustercells[Input2])
 params=QSP_.par
 pars = {Pars[k]:value for k,value in zip(range(len(Pars)),params)}
 
-answer = input('What type of macrophages? (Pro-Tumor=1, Anti-tumor=2, Regular=3)')
+answer = input('What type of macrophages? (Pro-Tumor=1, Anti-tumor=2, Mixed=3)')
 
 if int(answer)==1:
     pars['lambda_{G_betaM}'] = 0
@@ -307,7 +302,7 @@ RHS_MECH_ = project(RHS,S1)
 ##############################################################
 
 #######################################################################
-#Mesh and remeshing related info and
+#Mesh and remeshing info
 #######################################################################
 numCells = mesh.num_cells()
 mesh.smooth(100)
@@ -327,16 +322,16 @@ j = int(0)
 crvt1, NORMAL1 = Curvature(mesh)
 #######################################################################
 
-#+D_cell*dot(grad(Tc),grad(v3))*dx
+
 for n in range(num_steps):
      ##############################################################
-     #First we plot the ICs and then solve. This is why we have this if condition
+     #First we plot the ICs and then solve. 
      ##############################################################
      if j>=1:
          #############################################################
          if j>=2:
              ##############################################################
-             #constructing mechanical problem based on updated RHS, curvature and Normal vector
+             #constructing mechanical problem based on the updated RHS, curvature and Normal vector.
              ##############################################################
              mu = 1
              RHS = RHS_sum(U_n,Source,pars)
@@ -353,9 +348,8 @@ for n in range(num_steps):
              ##############################################################
 
              ##############################################################
-             #Create displacement for mesh movement. Moving from current configuration
-             #Also saving displacements for the reference domain to be used in
-             #the sensitvity analysis
+             #Create displacement for mesh movement. Moving happens from the current configuration
+             #Also saving displacements for the reference domain to be used in the sensitvity analysis
              ##############################################################
              u__ = project(u_/k,VV)
              displ = project(u_,VV1)
@@ -367,7 +361,7 @@ for n in range(num_steps):
              #############################################################
 
              ##############################################################
-             #Updatung the curvature and normal vectors for the current configuration
+             #Updating the curvature and normal vectors for the current configuration
              ##############################################################
              crvt1, NORMAL1 = Curvature(mesh)
              ##############################################################
@@ -568,7 +562,7 @@ for n in range(num_steps):
          ##############################################################
 
          ##############################################################
-         #Remesh until we fall in the desired number of meshes [Min_cellnum,Max_cellnum]
+         #Remesh until it satisfies the desired range of cells [Min_cellnum,Max_cellnum]
          ##############################################################
          while numCells > int(Max_cellnum):
              MeshSize+= MeshSize/100
@@ -610,7 +604,7 @@ for n in range(num_steps):
          ###############################################################
 
          ##############################################################
-         # Build function space on the new meshes
+         # Build function space on the new mesh
          ##############################################################
          #Mechanical problem
          P22 = VectorElement("P", mesh.ufl_cell(), 2)
@@ -633,7 +627,7 @@ for n in range(num_steps):
          ##############################################################################################
 
          ###############################################################
-         #Defining functions and test functions on new mesh
+         #Defining functions and test functions on the new mesh
          #We interpolate our already acquired results using the new mesh functions
          ###############################################################
          U = Function(Mixed_Space)
@@ -656,15 +650,14 @@ for n in range(num_steps):
          #######################################################################
 
          #######################################################################
-         # Construct integration measure using these markers for the new mesh
+         # Construct integration measures using these markers for the new mesh
          #######################################################################
          ds = Measure('ds', subdomain_data=bnd_mesh)
          dx = Measure('dx', subdomain_data=Volume)
          #######################################################################
 
          ###############################################################
-         #Updating the source locations for the new mesh. Since the sources
-         #need to move with the mesh
+         #Updating the source locations for the new mesh. Since the sources need to move with the mesh
          ###############################################################
          Source1.set_allow_extrapolation(True)
          Source2.set_allow_extrapolation(True)
