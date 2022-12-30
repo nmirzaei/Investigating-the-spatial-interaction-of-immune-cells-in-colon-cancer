@@ -119,6 +119,7 @@ dir = dir.replace(folder, 'Meshes')
 os.chdir(dir)
 ###############################################################
 
+
 ###############################################################
 # Load mesh
 ###############################################################
@@ -135,6 +136,17 @@ mvc2 = MeshValueCollection("size_t", mesh, 1)
 with XDMFFile("boundaries.xdmf") as infile:
     infile.read(mvc2, "f")
 bnd_mesh = cpp.mesh.MeshFunctionSizet(mesh, mvc2)
+###############################################################
+
+###############################################################
+#Reference Mesh
+###############################################################
+mesh0 = Mesh('Mesh.xml')
+Volume0 = MeshFunction('size_t' , mesh0 , 'Mesh_physical_region.xml' )  #saves the interior info of the mesh
+bnd_mesh0 = MeshFunction('size_t', mesh0 , 'Mesh_facet_region.xml')  #saves the boundary info of the mesh
+VV0 = VectorFunctionSpace(mesh0,'Lagrange',1)
+SS0 = FunctionSpace(mesh0,'Lagrange',1)
+mesh0.bounding_box_tree().build(mesh0)
 ###############################################################
 
 ###############################################################
@@ -342,9 +354,15 @@ for n in range(num_steps):
 
              ##############################################################
              #Create displacement for mesh movement. Moving from current configuration
+             #Also saving displacements for the reference domain to be used in
+             #the sensitvity analysis
              ##############################################################
              u__ = project(u_/k,VV)
              displ = project(u_,VV1)
+             displ.set_allow_extrapolation(True)
+             displ0 = project(displ,VV0)
+             File("displacement/u%d.xml" %(t))<<displ0
+             ALE.move(mesh0,displ0)
              ALE.move(mesh,displ)
              #############################################################
 
