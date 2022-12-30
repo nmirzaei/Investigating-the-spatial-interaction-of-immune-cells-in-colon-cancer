@@ -1,6 +1,6 @@
 '''
 Investigating the spatial interaction of immune cells in colon cancer
-RHS_sum: Sets up the system's right hand side for cells
+check_dependencies: Checks for required packages and installs them if missing
 Author: Navid Mohammad Mirzaei https://sites.google.com/view/nmirzaei
                                https://github.com/nmirzaei
 (c) Shahriyari Lab https://sites.google.com/site/leilishahriyari/
