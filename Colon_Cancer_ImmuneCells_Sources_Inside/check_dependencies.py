@@ -90,3 +90,25 @@ def check_dependencies():
           print('Error: Input not acceptable.')
           exit()
   ###############################################################
+  
+  ###############################################################
+  #Checking for scipy installation
+  #If not ask user for permission to install
+  ###############################################################
+
+  try:
+      import scipy as sci
+      print('scipy installation: checked')
+  except:
+      answer1 = input('A scipy package installation is required for this code. Do you want to install it?(Yes=1, No=0)')
+      if int(answer1)==0:
+          print('Error: scipy is required for this code.\n')
+          exit()
+      elif int(answer1)==1:
+          print('**Starting scipy installation**')
+          cmd8 = 'pip3 install --user scipy'
+          os.system(cmd8)
+      else:
+          print('Error: Input not acceptable.')
+          exit()
+  ###############################################################
