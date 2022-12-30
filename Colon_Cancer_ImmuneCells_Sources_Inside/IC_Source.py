@@ -20,10 +20,10 @@ def IC_Source(Mixed_Space,S1,U_n,Input2):
   ###############################################################
   #Initial conditions
   ###############################################################
-  #Tn is outside of the environment and are modeled as ODEs so uniform IC
+  #Tn is outside of the environment and is modeled as ODE with uniform IC.
   #Cytokines are taken to be zero at the begining.
   #Immune cells will start at their source locations.
-  #Cancer cells and Necrotic cells ICs are uniform and their values are
+  #Cancer and Necrotic cells' ICs are uniform and their values are
   #extracted from the ODE paper
   IC=np.array(pd.read_csv('input/input/Initial_Conditions.csv'))
   Tn_0 = Expression('Init1', degree=0, Init1=IC[Input2,0])
@@ -106,7 +106,7 @@ def IC_Source(Mixed_Space,S1,U_n,Input2):
 
 
   ###############################################################
-  #Assigning subspace projected ICs as the initial step of iteration
+  #Assigning projected ICs to subspace as the initial step of iteration.
   ###############################################################
   assign(U_n.sub(0),Tn0)
   assign(U_n.sub(1),Th0)
