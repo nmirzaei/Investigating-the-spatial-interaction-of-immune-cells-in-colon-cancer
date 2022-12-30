@@ -3,7 +3,7 @@ Investigating the spatial interaction of immune cells in colon cancer
 
 **This code is used to convert .xml mesh files to .xmdf mesh files**
 1- We first save the mesh build by GMSH in the file Mesh.msh
-2- Then we conver the .msh into .xml through the terminal command:
+2- Then we convert the .msh into .xml through the terminal command:
     dolfin-convert Mesh.msh Mesh.xml
 3- Step 2 creates 3 files: Mesh.xml, Mesh_physical_region.xml, Mesh_facet_region.xml
     used in this code
