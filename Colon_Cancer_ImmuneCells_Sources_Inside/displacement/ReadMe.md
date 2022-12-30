@@ -1,0 +1,1 @@
+After finishing one run of the code this folder will be populated with displacements to be used in sensitivity.
