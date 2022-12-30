@@ -8,17 +8,14 @@ Executable file: Main.py
 
 Requirements:
 
-1- FEniCS version : 2019.2.0.dev0
+(1) FEniCS version : 2019.2.0.dev0
 
-2- pandas, scipy, numpy
+(2) pandas, scipy, numpy, FEniCS callable GMSH
 
-3- Mesh files are needed for this folder to run. Please download them from "Investigating-the-spatial-interaction-of-immune-cells-in-colon-cancer/Meshes"
+NOTE1: All the packages in (2) will be installed by the code, if missing.
 
-4- For remeshing a legacy version of GMSH needs to be installed (i.e. gmsh-3.0.6-Linux64). In addition, it should be callable from within FEniCS. Use the          following lines to install is on Docker:
+NOTE2: This code produces a folder called "displacement" which is required for the executaion of the code 
+Investigating-the-spatial-interaction-of-immune-cells-in-colon-cancer/Sensitivity/Cancer_and_CancerImmuneRatio_sensitivity/Main.py
+Please make sure this folder is copied in the same folder as the above Main.py
 
-        /bin/sh -c "sudo apt-get update; sudo apt-get install -y libgl1-mesa-glx libxcursor1 libxft2 libxinerama1 libglu1-mesa"
-        wget -nc --quiet gmsh.info/bin/Linux/gmsh-3.0.6-Linux64.tgz
-        tar -xf gmsh-3.0.6-Linux64.tgz
-        sudo cp -r gmsh-3.0.6-Linux64/share/* /usr/local/share/
-        sudo cp gmsh-3.0.6-Linux64/bin/* /usr/local/bin
         
