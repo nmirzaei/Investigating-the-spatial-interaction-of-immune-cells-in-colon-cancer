@@ -79,17 +79,14 @@ logging.getLogger('FFC').setLevel(logging.WARNING)
 ###############################################################
 #Paths
 ###############################################################
-# gives the path of demo.py
+# gives the path of Main.py
 path = os.path.realpath(__file__)
-# gives the directory where demo.py 
-# exists
+# gives the directory where Main.py exists
 dir = os.path.dirname(path)
 folder = os.path.basename(dir)
-# replaces folder name to 
-# Meshes in directory
+# replaces folder name to Meshes in directory
 dir = dir.replace(folder, 'Meshes')
-# changes the current directory to 
-# Meshes folder
+# changes the current directory to Meshes folder
 os.chdir(dir)
 ###############################################################
 
@@ -114,11 +111,9 @@ bnd_mesh = cpp.mesh.MeshFunctionSizet(mesh, mvc2)
 ###############################################################
 #Paths
 ###############################################################
-# replaces Meshes folder name to 
-# the current code directory
+# replaces Meshes folder name to the current code directory
 dir = dir.replace('Meshes',folder)
-# changes the meshes directory to 
-# the current code folder
+# changes the meshes directory to the current code folder
 os.chdir(dir)
 ###############################################################
 
@@ -135,10 +130,10 @@ if d==3:
             Expression(('-x[2]', '0', 'x[0]')),
             Expression(('x[1]', '-x[0]', '0'))]
 elif d==2:
-    #Translation 2D. Comment out if the problem is 3D
+    #Translation 2D.
     Z_transl = [Constant((1, 0)), Constant((0, 1))]
 
-    #Rotations 2D. Comment out if the problem is 3D
+    #Rotations 2D.
     Z_rot = [Expression(('-x[1]', 'x[0]'),degree=0)]
 
 else:
@@ -196,7 +191,7 @@ u__ = Function(VV1)
 displ = Function(VV1)
 #######################################################################
 
-# Construct integration measure using these markers
+# Construct integration measures using these markers
 ds = Measure('ds', subdomain_data=bnd_mesh)
 dx = Measure('dx', subdomain_data=Volume)
 ###############################################################
@@ -209,7 +204,7 @@ num_steps= 3000  # number of time steps
 dt = 1  # time step
 eps = 1             # diffusion coefficient
 t=0                 # initial time
-k = Constant(dt)    # Constant tip step object for weak formulation
+k = Constant(dt)    # Constant time step object for the weak formulation
 ###############################################################
 
 ###############################################################
@@ -265,7 +260,7 @@ Tn_n, Th_n, Tc_n, Tr_n, Dn_n, D_n, M_n, C_n, N_n, H_n, mu1_n, mu2_n, Igamma_n, G
 
 
 ###############################################################
-#PDE Parameters dimensional. We use Dolfin constant to be able to calculate their sensitivity
+#PDE Parameters (dimensional). We use Dolfin constant to be able to calculate their sensitivity
 ###############################################################
 #They are all in cm^2/day.
 D_Th, D_Tc, D_Tr, D_Dn, D_D, D_M, D_C, D_N, D_H, D_mu1, D_mu2, D_Igamma, D_Gbeta =  Constant(8.64e-6), Constant(8.64e-6), Constant(8.64e-6), Constant(8.64e-6), Constant(8.64e-6), Constant(8.64e-6), Constant(8.64e-6), Constant(8.64e-6), Constant(7.92e-2), Constant(1.24e-3), Constant(1.24e-3), Constant(1.24e-3), Constant(1.24e-3)
@@ -284,7 +279,7 @@ vtkfile.parameters["flush_output"] = True
 
 
 #######################################################################
-#Mesh and remeshing related info and
+#Mesh and remeshing related info
 #######################################################################
 numCells = mesh.num_cells()
 mesh.smooth(100)
@@ -299,8 +294,7 @@ j = int(0)
 #######################################################################
 
 #######################################################################
-#Calculating the maximum number of iterations and asking the user to
-#pick their preference
+#Calculating the maximum number of iterations and asking the user to pick their preference
 #######################################################################
 mem_use = mem_gib*(int(answer_1)/100)*1024
 max_itr =  (1/18.1667)*(mem_use-528)+2
@@ -308,19 +302,19 @@ print('The suggested maximum number of iterations based on your memory and your 
 usr_itr = input('Now enter the maximum number of iterations based on the suggested value:')
 #######################################################################
 
-#This code saves the last U_n, mesh and sources so you can continure to higher values of n.
-#For example once you calculate this loop is done you can immediatley start a
-#new code with range(usr_itr,2*usr_itr-1) and so on. Make sure the last U_n,mesh and sources from the previous
+#This code saves the last U_n, mesh and sources so you can continue to higher values of n.
+#For example once this loop is done you can immediatley start a
+#new code with range(usr_itr,2*usr_itr-1) and so on. Make sure the last U_n, mesh and sources from the previous
 #code are saved in the directory of the new code.
 for n in range(int(usr_itr)):
      ##############################################################
-     #First we plot the ICs and then solve. This is why we have this if condition
+     #First we plot the ICs and then solve. 
      ##############################################################
      if j>=1:
          #############################################################
          if j>=2:
              ##############################################################
-             #Read the saved displacements
+             #Read the save displacements
              ##############################################################
              u__ = Function(VV1,"displacement/u%d.xml" %(n-1))
              dis = u__
@@ -335,7 +329,7 @@ for n in range(int(usr_itr)):
          ##############################################################
 
          ##############################################################
-         #Reading the last U_n only if the range is not range(151)
+         #Reading the last U_n only if the range is not range(int(usr_itr))
          ##############################################################
          if j==1 and n!=1:
              U_n = Function(Mixed_Space,"Bilogy/U%d.xml" %(n-1))
