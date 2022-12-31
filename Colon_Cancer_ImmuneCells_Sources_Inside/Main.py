@@ -366,6 +366,8 @@ for n in range(num_steps):
              os.chdir(dir)
              ALE.move(mesh0,displ0)
              ALE.move(mesh,displ)
+             mesh0.bounding_box_tree().build(mesh0)
+             mesh.bounding_box_tree().build(mesh)
              #############################################################
 
              ##############################################################
