@@ -85,7 +85,7 @@ def Curvature(mesh):
     ###############################################################
 
     ###############################################################
-    #Returns sum of vec over all mpi processes.
+    #Returns the sum of vec over all mpi processes.
     #Each vec vector must have the same dimension for each MPI process
     ###############################################################
     def SyncSum(vec):
@@ -118,10 +118,10 @@ def Curvature(mesh):
         imin, imax = dof.ownership_range()
 
         for i in range(f.vector().local_size()):
-            GVertID = Vertex(b_mesh, d2v[i]).index()  # Local Vertex ID for given dof on boundary mesh
-            PVertID = map[GVertID]  # Local Vertex ID of parent mesh
-            PDof = v2d[PVertID]  # Dof on parent mesh
-            value = f.vector()[i]  # Value on local processor
+            GVertID = Vertex(b_mesh, d2v[i]).index()  # Local Vertex ID for the given dof on boundary mesh
+            PVertID = map[GVertID]  # Local Vertex ID of the parent mesh
+            PDof = v2d[PVertID]  # Dof on the parent mesh
+            value = f.vector()[i]  # Value on the local processor
             GValues[dof.local_to_global_index(PDof)] = value
         GValues = SyncSum(GValues)
 
