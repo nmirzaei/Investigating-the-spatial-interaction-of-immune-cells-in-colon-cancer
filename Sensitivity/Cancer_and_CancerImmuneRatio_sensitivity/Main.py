@@ -363,7 +363,7 @@ for n in range(int(it_start),int(it_start)+int(usr_itr)):
          ##############################################################
 
          ##############################################################
-         #Reading the last U_n only if the range is not range(int(usr_itr))
+         #Reading the last U_n only if it is not the first run
          ##############################################################
          if j==1 and n!=1:
              U_n = Function(Mixed_Space,"Biology/U%d.xml" %(n-1))
