@@ -29,6 +29,7 @@ from GeoMaker import *
 from Curvature import *
 from qspmodel import *
 from IC_Source import *
+from RHS_sum import *
 from xdmffile_creator import *
 from check_dependencies import *
 from ufl import Min
