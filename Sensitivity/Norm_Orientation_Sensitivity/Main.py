@@ -44,6 +44,22 @@ check_dependencies()
 ###############################################################
 
 ###############################################################
+#Checking to see if this is a continuing run or the first run
+#if continuing the code will upload the information from the last run
+###############################################################
+answer = input('Is this your first run of sensitivity or you are continuing? ( continuing=1, first run=0)')
+if int(answer)==1:
+    file_name = os.listdir('Biology')
+    displ_name = os.path.splitext(file_name[-1])[0]
+    it_start = displ_name[1:]
+elif int(answer)==0:
+    it_start = '0'
+else:
+    print('Error: Wrong input!')
+    exit()
+###############################################################
+
+###############################################################
 #Checking memory availibility
 ###############################################################
 mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
@@ -366,11 +382,6 @@ Counter=0
 t = 0.0
 #######################################################################
 
-#If not the first run of the code, read the biology from the saved files of
-#the last run
-if j>0:
-    U_n = Function(Mixed_Space,"Biology/U%d.xml" %(idx))
-#######################################################################
 #######################################################################
 
 #######################################################################
@@ -389,11 +400,11 @@ print('The suggested maximum number of iterations based on your memory and your 
 usr_itr = input('Now enter the maximum number of iterations based on the suggested value:')
 #######################################################################
 
-#This code saves the last U_n, mesh and sources so you can continure to higher values of n.
-#For example once you calculate this loop is done you can immediatley start a
-#new code with range(usr_itr,2*usr_itr-1) and so on. Make sure the last U_n,mesh and sources from the previous
+#This code saves the last U_n, mesh and sources so you can continue to higher values of n.
+#For example once this loop is done you can immediatley start a
+#new code with range(int(it_start),int(it_start)+int(usr_itr)) and so on. Make sure the last U_n, mesh and sources from the previous
 #code are saved in the directory of the new code.
-for n in range(int(usr_itr)):
+for n in range(int(it_start),int(it_start)+int(usr_itr)):
      ##############################################################
      #First we plot the ICs and then solve. This is why we have this if condition
      ##############################################################
@@ -437,6 +448,15 @@ for n in range(int(usr_itr)):
          print(n,flush=True)
          t+=dt
          ##############################################################
+
+         ##############################################################
+         #Reading the last U_n only if it is not the first run
+         ##############################################################
+         if j==1 and n!=1:
+             U_n = Function(Mixed_Space,"Biology/U%d.xml" %(n-1))
+             Tn_n, Th_n, Tc_n, Tr_n, Dn_n, D_n, M_n, C_n, N_n, H_n, mu1_n, mu2_n, Igamma_n, Gbeta_n= U_n.split()
+             print('Read the U_n for n=%d!' %(n-1))
+         ##############################################################  
 
          #Update biology PDE and solve
          F1 = ((Tn-Tn_n)/k)*v1*dx-(theta[0]-theta[1]*(theta[2]*D+theta[3]*M+theta[4]*mu1)*Tn-theta[5]*(theta[6]*Th+theta[7]*D)*Tn-theta[8]*(theta[9]*Th+theta[10]*mu2+theta[11]*Gbeta)*Tn-theta[12]*Tn)*v1*dx\
@@ -534,7 +554,7 @@ for idx1 in range(len(Pars_ordered)):
     dJdp = compute_gradient(J1, Control(theta[idx1]), options={"riesz_representation": "L2"})
     SS.append(max(project(dJdp,S1).vector()[:]))
     print(idx1+1, 'Gradient done!')
-    c=csv.writer(open('sensitivities_cancer.csv',"w"))
+    c=csv.writer(open('sensitivities_cancer'+it_start+'.csv',"w"))
     c.writerow(SS)
     del c
 ##############################################################
@@ -543,7 +563,7 @@ for idx1 in range(len(Dfc)):
     dJdD = compute_gradient(J1, Control(Dfc[idx1]), options={"riesz_representation": "L2"})
     SS.append(max(project(dJdD,S1).vector()[:]))
     print(idx1+1, 'Diffusion Gradient done!')
-    c=csv.writer(open('sensitivities_cancer.csv',"w"))
+    c=csv.writer(open('sensitivities_cancer'+it_start+'.csv',"w"))
     c.writerow(SS)
     del c
 ##############################################################
@@ -551,7 +571,7 @@ for idx1 in range(len(Src)):
     dJdS = compute_gradient(J1, Control(Src[idx1]), options={"riesz_representation": "L2"})
     SS.append(max(project(dJdS,S1).vector()[:]))
     print(idx1+1, 'Source Gradient done!')
-    c=csv.writer(open('sensitivities_cancer.csv',"w"))
+    c=csv.writer(open('sensitivities_cancer'+it_start+'.csv',"w"))
     c.writerow(SS)
     del c
 #######################################################################
