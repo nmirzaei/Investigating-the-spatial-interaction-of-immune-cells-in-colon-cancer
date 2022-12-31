@@ -39,6 +39,22 @@ check_dependencies()
 ###############################################################
 
 ###############################################################
+#Checking to see the displacements are available
+###############################################################
+answer = input('Have you calculated the displacements? ( I do not know=2, Yes=1, No=0')
+if int(answer)==2:
+    print('See if the displacement folder is populated with .xml files u1.xml to u3000.xml')
+    answer = input('Now, have you calculated the displacements? ( I do not know=2, Yes=1, No=0')
+elif int(answer) == 0:
+    print('Error: This code needs pre-calculated displacements\n')
+    print('**Go to the folder Colon_Cancer_ImmuneCells_Sources_Inside and finish running the Main.py file. This will produce all the displacements!**\n')
+    exit()
+elif int(answer)==1:
+    print('Displacement availability: Checked')
+else:
+    print('Error: Wrong input!')
+    exit()
+###############################################################
 #Checking memory availibility
 ###############################################################
 mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
