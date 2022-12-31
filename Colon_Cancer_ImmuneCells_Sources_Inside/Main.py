@@ -356,7 +356,14 @@ for n in range(num_steps):
              displ = project(u_,VV1)
              displ.set_allow_extrapolation(True)
              displ0 = project(displ,VV0)
+             path = os.path.realpath(__file__)
+             dir = os.path.dirname(path)
+             folder = os.path.basename(dir)
+             dir = dir.replace(folder, 'Sensitivity/Cancer_and_CancerImmuneRatio_sensitivity')
+             os.chdir(dir)
              File("displacement/u%d.xml" %(t))<<displ0
+             dir = dir.replace('Sensitivity/Cancer_and_CancerImmuneRatio_sensitivity',folder)
+             os.chdir(dir)
              ALE.move(mesh0,displ0)
              ALE.move(mesh,displ)
              #############################################################
