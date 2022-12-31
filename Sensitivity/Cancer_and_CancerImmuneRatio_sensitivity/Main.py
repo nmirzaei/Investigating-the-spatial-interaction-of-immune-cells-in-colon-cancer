@@ -455,7 +455,7 @@ for idx in range(len(Pars_ordered)):
     dJdp = compute_gradient(J1, Control(theta[idx]), options={"riesz_representation": "L2"})
     SS.append(max(project(dJdp,S1).vector()[:]))
     print(idx+1, 'Gradient done!')
-    c=csv.writer(open('sensitivities_cancer.csv',"w"))
+    c=csv.writer(open('sensitivities_cancer'+it_start+'.csv',"w"))
     c.writerow(SS)
     del c
 ##############################################################
@@ -464,7 +464,7 @@ for idx in range(len(Dfc)):
     dJdD = compute_gradient(J1, Control(Dfc[idx]), options={"riesz_representation": "L2"})
     SS.append(max(project(dJdD,S1).vector()[:]))
     print(idx+1, 'Diffusion Gradient done!')
-    c=csv.writer(open('sensitivities_cancer.csv',"w"))
+    c=csv.writer(open('sensitivities_cancer'+it_start+'.csv',"w"))
     c.writerow(SS)
     del c
 ##############################################################
@@ -472,7 +472,7 @@ for idx in range(len(Src)):
     dJdS = compute_gradient(J1, Control(Src[idx]), options={"riesz_representation": "L2"})
     SS.append(max(project(dJdS,S1).vector()[:]))
     print(idx+1, 'Source Gradient done!')
-    c=csv.writer(open('sensitivities_cancer.csv',"w"))
+    c=csv.writer(open('sensitivities_cancer'+it_start+'.csv',"w"))
     c.writerow(SS)
     del c
 #######################################################################
