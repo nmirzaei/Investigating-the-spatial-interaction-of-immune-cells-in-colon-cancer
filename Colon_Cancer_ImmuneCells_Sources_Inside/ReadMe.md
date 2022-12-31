@@ -14,8 +14,6 @@ Requirements:
 
 NOTE1: All the packages in (2) will be installed by the code, if missing.
 
-NOTE2: This code produces a folder called "displacement" which is required for the executaion of the code 
-Investigating-the-spatial-interaction-of-immune-cells-in-colon-cancer/Sensitivity/Cancer_and_CancerImmuneRatio_sensitivity/Main.py
-Please make sure this folder is copied in the same folder as the above Main.py
+NOTE2: This code produces a folder called "displacement" in "Investigating-the-spatial-interaction-of-immune-cells-in-colon-cancer/Sensitivity/Cancer_and_CancerImmuneRatio_sensitivity" which is required for the executaion of the corresponding sensitivity code.
 
         
