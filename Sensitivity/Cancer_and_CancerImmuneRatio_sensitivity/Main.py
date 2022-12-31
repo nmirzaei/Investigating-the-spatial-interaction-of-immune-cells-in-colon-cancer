@@ -41,7 +41,7 @@ check_dependencies()
 ###############################################################
 #Checking to see the displacements are available
 ###############################################################
-answer = input('Have you calculated the displacements? ( I do not know=2, Yes=1, No=0')
+answer = input('Have you calculated the displacements? ( I do not know=2, Yes=1, No=0)')
 if int(answer)==2:
     print('See if the displacement folder is populated with .xml files u1.xml to u3000.xml')
     answer = input('Now, have you calculated the displacements? ( I do not know=2, Yes=1, No=0')
