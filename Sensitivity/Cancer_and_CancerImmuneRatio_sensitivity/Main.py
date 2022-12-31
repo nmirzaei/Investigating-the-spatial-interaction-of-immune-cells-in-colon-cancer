@@ -55,6 +55,24 @@ else:
     print('Error: Wrong input!')
     exit()
 ###############################################################
+
+###############################################################
+#Checking to see if this is a continuing run or the first run
+#if continuing the code will upload the information from the last run
+###############################################################
+answer = input('Is this your first run of sensitivity or you are continuing? ( continuing=1, first run=0)')
+if int(answer)==1:
+    file_name = os.listdir('Biology')
+    displ_name = os.path.splitext(file_name[-1])[0]
+    it_start = displ_name[1:]
+elif int(answer)==0:
+    it_start = 0
+else:
+    print('Error: Wrong input!')
+    exit()
+###############################################################
+
+###############################################################
 #Checking memory availibility
 ###############################################################
 mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
@@ -320,9 +338,9 @@ usr_itr = input('Now enter the maximum number of iterations based on the suggest
 
 #This code saves the last U_n, mesh and sources so you can continue to higher values of n.
 #For example once this loop is done you can immediatley start a
-#new code with range(usr_itr,2*usr_itr-1) and so on. Make sure the last U_n, mesh and sources from the previous
+#new code with range(int(it_start),int(it_start)+int(usr_itr)) and so on. Make sure the last U_n, mesh and sources from the previous
 #code are saved in the directory of the new code.
-for n in range(int(usr_itr)):
+for n in range(int(it_start),int(it_start)+int(usr_itr)):
      ##############################################################
      #First we plot the ICs and then solve. 
      ##############################################################
@@ -348,7 +366,7 @@ for n in range(int(usr_itr)):
          #Reading the last U_n only if the range is not range(int(usr_itr))
          ##############################################################
          if j==1 and n!=1:
-             U_n = Function(Mixed_Space,"Bilogy/U%d.xml" %(n-1))
+             U_n = Function(Mixed_Space,"Biology/U%d.xml" %(n-1))
              Tn_n, Th_n, Tc_n, Tr_n, Dn_n, D_n, M_n, C_n, N_n, H_n, mu1_n, mu2_n, Igamma_n, Gbeta_n= U_n.split()
              print('Read the U_n for n=%d!' %(n-1))
          ##############################################################
