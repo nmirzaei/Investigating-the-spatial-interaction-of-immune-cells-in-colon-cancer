@@ -1,8 +1,6 @@
 '''
 Investigating the spatial interaction of immune cells in colon cancer
-
 **The main script**
-
 GeoMaker: Remeshing Function
 
 Curvature: Calculates Curvature and Normal vectors of a given domain
@@ -12,9 +10,16 @@ qspmodel: Calculates the ODE parameters.
             Courtesy of Arkadz Kirshtein:
 https://github.com/ShahriyariLab/Data-driven-mathematical-model-for-colon-cancer
 
+IC_Source: Creates initial condition and source locations for the immune cells
+
+RHS_sum: Calculates the right hand side of the ODE system
+
+xdmffile_creator: Creates the XDMF outputs
+
+check_dependencies: Checks for dependencies and installs them if missing
+
 Author: Navid Mohammad Mirzaei https://sites.google.com/view/nmirzaei
                                https://github.com/nmirzaei
-
 (c) Shahriyari Lab https://sites.google.com/site/leilishahriyari/
 '''
 ###############################################################
