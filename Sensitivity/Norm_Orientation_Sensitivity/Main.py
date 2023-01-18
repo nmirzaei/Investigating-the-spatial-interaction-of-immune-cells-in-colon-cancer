@@ -3,16 +3,19 @@ Investigating the spatial interaction of immune cells in colon cancer
 
 **This script calculates the Sensitivity of cancer cell total population to our model parameters**
 
+Curvature: Calculates Curvature and Normal vectors of a given domain
+            Courtesy of http://jsdokken.com/
+
 qspmodel: Calculates the ODE parameters.
             Courtesy of Arkadz Kirshtein:
 https://github.com/ShahriyariLab/Data-driven-mathematical-model-for-colon-cancer
 
-Curvature: Calculates Curvature and Normal vectors of a given domain
-            Courtesy of http://jsdokken.com/
+IC_Source: Creates initial conditions and sources for immune cells
+
+check_dependencies: Checks for dependencies and installs them if missing
 
 Author: Navid Mohammad Mirzaei https://sites.google.com/view/nmirzaei
                                https://github.com/nmirzaei
-
 (c) Shahriyari Lab https://sites.google.com/site/leilishahriyari/
 '''
 ###############################################################
