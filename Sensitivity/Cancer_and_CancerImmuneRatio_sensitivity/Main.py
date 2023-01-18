@@ -7,10 +7,12 @@ qspmodel: Calculates the ODE parameters.
             Courtesy of Arkadz Kirshtein:
 https://github.com/ShahriyariLab/Data-driven-mathematical-model-for-colon-cancer
 
+IC_source: Creates initial conditions and sources for immune cells
+
+check_dependencies: Checks for dependencies and installs them if missing
 
 Author: Navid Mohammad Mirzaei https://sites.google.com/view/nmirzaei
                                https://github.com/nmirzaei
-
 (c) Shahriyari Lab https://sites.google.com/site/leilishahriyari/
 '''
 ###############################################################
