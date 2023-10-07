@@ -8,4 +8,4 @@ Contact nmirzaei@umass.edu for any questions.
 
 If using any parts of this code please cite:
 
-TBA
+Mirzaei, Navid Mohammad, Wenrui Hao, and Leili Shahriyari. "Investigating the spatial interaction of immune cells in colon cancer." Iscience 26.5 (2023).
